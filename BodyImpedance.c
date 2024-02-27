@@ -19,24 +19,24 @@ Analog Devices Software License Agreement.
 */
 AppBIACfg_Type AppBIACfg = 
 {
-  .bParaChanged = bTRUE, //bylo bFALSE
+  .bParaChanged = bFALSE,
   .SeqStartAddr = 0,
   .MaxSeqLen = 0,
   
   .SeqStartAddrCal = 0,
   .MaxSeqLenCal = 0,
 
-  .ReDoRtiaCal = bTRUE,	//normlanie FALSE
+  .ReDoRtiaCal = bFALSE,
   .SysClkFreq = 16000000.0,
   .WuptClkFreq = 32000.0,
   .AdcClkFreq = 16000000.0,
   .BiaODR = 20.0, /* 20.0 Hz*/
-  .NumOfData = -1, //bylo -1
-  .RcalVal = 10000.0, /* 10kOhm */ //zmienialemm na 1k zeby bylo jak RTIAL nic to nie zmienilo
+  .NumOfData = -1,
+  .RcalVal = 10000.0, /* 10kOhm */
 
   .PwrMod = AFEPWR_LP,
   .HstiaRtiaSel = HSTIARTIA_1K,
-  .CtiaSel = 16,	//CTIA pojemnosciowy wzmacniacz transimpedancyjny, wartosc od 1 do 32 pF
+  .CtiaSel = 16,
   .ExcitBufGain = EXCITBUFGAIN_2,
   .HsDacGain = HSDACGAIN_1,
   .HsDacUpdateRate = 7,
@@ -50,14 +50,14 @@ AppBIACfg_Type AppBIACfg =
 
   .DftNum = DFTNUM_8192,
   .DftSrc = DFTSRC_SINC3,
-  .HanWinEn = bTRUE, // bylo true
+  .HanWinEn = bTRUE,
 
-  .SweepCfg.SweepEn = bFALSE,	//normalnie bFALSE
+  .SweepCfg.SweepEn = bFALSE,
   .SweepCfg.SweepStart = 10000,
   .SweepCfg.SweepStop = 150000.0,
   .SweepCfg.SweepPoints = 100,
   .SweepCfg.SweepLog = bTRUE,
-  .SweepCfg.SweepIndex = 0, //przesunie pomiary o wartosc zadana
+  .SweepCfg.SweepIndex = 0,
 
   .FifoThresh = 4,
   .BIAInited = bFALSE,
@@ -160,7 +160,7 @@ static AD5940Err AppBIASeqCfgGen(void)
   /* Start sequence generator here */
   AD5940_SEQGenCtrl(bTRUE);
 
- // AD5940_AFECtrlS(AFECTRL_ALL, bFALSE);  /* Init all to disable state*/
+  //AD5940_AFECtrlS(AFECTRL_ALL, bFALSE);  /* Init all to disable state */
 
   aferef_cfg.HpBandgapEn = bTRUE;
   aferef_cfg.Hp1V1BuffEn = bTRUE;
@@ -391,8 +391,7 @@ static AD5940Err AppBIARtiaCal(void)
     {
 			AD5940_HSRtiaCal(&hsrtia_cal, AppBIACfg.RtiaCalTable[i]);
 #ifdef ADI_DEBUG
-      //ADI_Print("Freq:%.2f, RTIA: Mag:%f Ohm, Phase:%.3f\n", hsrtia_cal.fFreq, AppBIACfg.RtiaCalTable[i][0], AppBIACfg.RtiaCalTable[i][1]);
-			//dodalem komenatrz
+      ADI_Print("Freq:%.2f, RTIA: Mag:%f Ohm, Phase:%.3f\n", hsrtia_cal.fFreq, AppBIACfg.RtiaCalTable[i][0], AppBIACfg.RtiaCalTable[i][1]);
 #endif
       AD5940_SweepNext(&AppBIACfg.SweepCfg, &hsrtia_cal.fFreq);     
     }
@@ -520,7 +519,7 @@ static AD5940Err AppBIADataProcess(int32_t * const pData, uint32_t *pDataCount)
   uint32_t ImpResCount = DataCount/4;
 
   fImpPol_Type * const pOut = (fImpPol_Type*)pData;
-  iImpCar_Type * pSrcData = (iImpCar_Type*)pData;	//bylo iImpCar
+  iImpCar_Type * pSrcData = (iImpCar_Type*)pData;
 
   *pDataCount = 0;
 
@@ -537,44 +536,23 @@ static AD5940Err AppBIADataProcess(int32_t * const pData, uint32_t *pDataCount)
   }
   for(uint32_t i=0; i<ImpResCount; i++)
   {
-    iImpCar_Type *pDftVolt, *pDftCurr;	//bylo iImpCar
+    iImpCar_Type *pDftVolt, *pDftCurr;
 
     pDftCurr = pSrcData++;
     pDftVolt = pSrcData++;
     float VoltMag,VoltPhase;
     float CurrMag, CurrPhase;
-		
-		//float obliczamRe, obliczamIz;
-
-		
 
     VoltMag = sqrt((float)pDftVolt->Real*pDftVolt->Real+(float)pDftVolt->Image*pDftVolt->Image);
-		 //VoltMag = (float)pDftVolt->Real;	//dopisane
     VoltPhase = atan2(-pDftVolt->Image,pDftVolt->Real);
-		// VoltPhase = (float)pDftVolt->Image; //dopisane
     CurrMag = sqrt((float)pDftCurr->Real*pDftCurr->Real+(float)pDftCurr->Image*pDftCurr->Image);
-		// CurrMag = (float)pDftCurr->Real; //dopisane
     CurrPhase = atan2(-pDftCurr->Image,pDftCurr->Real);
-		// CurrPhase = (float)pDftCurr->Image; //dopisane
 
-   VoltMag = VoltMag/CurrMag*AppBIACfg.RtiaCurrValue[0];
-	// VoltMag = VoltMag/CurrMag;
-   VoltPhase = VoltPhase - CurrPhase + AppBIACfg.RtiaCurrValue[1];
-		//VoltPhase = VoltPhase/CurrPhase;//*AppBIACfg.RtiaCurrValue[0];
+    VoltMag = VoltMag/CurrMag*AppBIACfg.RtiaCurrValue[0];
+    VoltPhase = VoltPhase - CurrPhase + AppBIACfg.RtiaCurrValue[1];
 
     pOut[i].Magnitude = VoltMag;
     pOut[i].Phase = VoltPhase;
-		
-		
-		//dopisuje
-	/*	obliczamRe= ((double)pDftVolt->Real)/((double)pDftCurr->Real);
-		obliczamIz = ((double)pDftVolt->Image/(double)pDftCurr->Image);
-		obliczamRe = (obliczamRe/4);
-		obliczamIz = (obliczamIz/4)*4;
-		
-		pSrcData[i].Real = obliczamRe;
-		pSrcData[i].Image = obliczamIz;
-		*/
   }
   *pDataCount = ImpResCount; 
   /* Calculate next frequency point */

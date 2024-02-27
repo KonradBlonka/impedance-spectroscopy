@@ -141,35 +141,3 @@ int fputc(int c, FILE *f)
   while((pADI_UART0->COMLSR&0x20) == 0);// tx fifo empty
   return c;
 }
-
-//dodalem
-void UART_Int_Handler(void)
-{
-  void UARTCmd_Process(char);
-  uint32_t flag;
-  flag = pADI_UART0->LSR;
-  flag = pADI_UART0->IIR;
-  if((flag & 0x0e) == 0x04)  /* Receive Byte */
-  {
-    uint32_t count;
-    count = pADI_UART0->RFC;  /* Receive FIFO count */
-    for(int i=0;i < count; i++)
-    {
-      char c;
-      c = pADI_UART0->COMRX&0xff;
-      UARTCmd_Process(c);
-    }
-  }
-  if((flag & 0x0e) == 0xc)  /* Time-out */
-  {
-    uint32_t count;
-    count = pADI_UART0->RFC;  /* Receive FIFO count */
-    for(int i=0;i < count; i++)
-    {
-      char c;
-      c = pADI_UART0->COMRX&0xff;
-      UARTCmd_Process(c);
-    }
-  }
-}
-

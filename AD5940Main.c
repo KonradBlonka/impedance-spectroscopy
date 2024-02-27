@@ -24,50 +24,26 @@ Analog Devices Software License Agreement.
 #include "string.h"
 #include "math.h"
 #include "BodyImpedance.h"
-#include <cstdio> //dodalem
 
 #define APPBUFF_SIZE 512
-
 uint32_t AppBuff[APPBUFF_SIZE];
 
 /* It's your choice here how to do with the data. Here is just an example to print them to UART */
-int32_t BIAShowResult(uint32_t *pData, uint32_t DataCount)
+AD5940Err BIAShowResult(uint32_t *pData, uint32_t DataCount)
 {
-	//AD5940_ReadWriteNBytes
   float freq;
-	
-  //fImpPol_Type *pImp = (fImpPol_Type*)pData; //to jest dobre ale testuje pOut
+
+  fImpPol_Type *pImp = (fImpPol_Type*)pData;
   AppBIACtrl(BIACTRL_GETFREQ, &freq);
 
-	
-	AppBIACfg_Type *pBIACfg;
-	AppBIAGetCfg(&pBIACfg);
-
-	//dopisuje
- // AppBIACfg_Type *pBIACfg; 
-  //AppBIAGetCfg(&pBIACfg);
-	
-	//to jest dobrze ale testuje pOut
-	//fImpCar_Type *pReIz = (fImpCar_Type*)pData;	//wywolanie klasy, pRI czyli rzeczywiste i urojone zamiast pSrcData
-	
-	fImpPol_Type * const pOut = (fImpPol_Type*)pData;
-	
-		
-	for(int i=0;i<DataCount;i++)
+  printf("Freq:%.2f ", freq);
+  /*Process data*/
+  for(int i=0;i<DataCount;i++)
   {
-		
-		//to jest dobrze ale testuje pOut
-//		fImpCar_Type res; //dobrze
-//		res = pReIz[i]; //dobrze
-//		printf("Re1 = %f ohm , Iz1 = %f ohm", res.Real, res.Image); //dobrze
-//    printf("RzMag: %f Ohm , RzPhase: %f\n",pImp[i].Magnitude,pImp[i].Phase*180/MATH_PI); //dobrze
-		printf("%.2f, %f, %f\n", freq,pOut[i].Magnitude,pOut[i].Phase); //dobrze
+    printf("RzMag: %f Ohm , RzPhase: %f \n",pImp[i].Magnitude,pImp[i].Phase*180/MATH_PI);
+  }
+  return 0;
 }
-
-
-	
-	return 0;
-	}
 
 /* Initialize AD5940 basic blocks like clock */
 static int32_t AD5940PlatformCfg(void)
@@ -119,150 +95,133 @@ static int32_t AD5940PlatformCfg(void)
 
 /* !!Change the application parameters here if you want to change it to none-default value */
 void AD5940BIAStructInit(void)
-{	
-	
-	//for (int czesto=1; czesto<=200000; czesto++){
-		
+{
   AppBIACfg_Type *pBIACfg;
   
   AppBIAGetCfg(&pBIACfg);
   
   pBIACfg->SeqStartAddr = 0;
   pBIACfg->MaxSeqLen = 512; /** @todo add checker in function */
-	//pBIACfg->SinFreq = czesto; /*sobie dodalem */
-
-	
-	//for(i=1; i <= 20000; i++) {	//dodana petla zlogarytmowanego dziesietnie czestotliwosci 
-	//	a = log10(i);
-		//a = pBIACfg->SinFreq;
-		
-		/*sobie dodalem */
-	//}
   
-  pBIACfg->RcalVal = 10000.0;	//bylo 10000
-	
+  pBIACfg->RcalVal = 10000.0;
   pBIACfg->DftNum = DFTNUM_8192;
   pBIACfg->NumOfData = -1;      /* Never stop until you stop it manually by AppBIACtrl() function */
   pBIACfg->BiaODR = 20;         /* ODR(Sample Rate) 20Hz */
   pBIACfg->FifoThresh = 4;      /* 4 */
   pBIACfg->ADCSinc3Osr = ADCSINC3OSR_2;
-//	
-	pBIACfg->SweepCfg.SweepEn = bTRUE;
-//	pBIACfg->SweepCfg.SweepStart = 50;				//od 0.015 Hz
-//  pBIACfg->SweepCfg.SweepStop = 195000.0;		//do 200kHz
-//  pBIACfg->SweepCfg.SweepPoints = 100;
-//  pBIACfg->SweepCfg.SweepLog = bTRUE;
-//  pBIACfg->SweepCfg.SweepIndex = 0;
-//	
 }
-//}
 
-uint8_t dzialaj = 1;
 void AD5940_Main(void)
 {
-
-
-	//printf("Dawaj wartosc");
-		//scanf("%f", &var_1);
-	//	printf("Blagam dzialaj wartosc: %f", var_1);
-	static uint32_t IntCount;
+  static uint32_t IntCount;
   static uint32_t count;
   uint32_t temp;
-	
-  AD5940PlatformCfg();
   
+  AD5940PlatformCfg();
   AD5940BIAStructInit(); /* Configure your parameters in this function */
   
   AppBIAInit(AppBuff, APPBUFF_SIZE);    /* Initialize BIA application. Provide a buffer, which is used to store sequencer commands */
-  //AppBIACtrl(BIACTRL_START, 0);         /* Control BIA measurement to start. Second parameter has no meaning with this command. */
-
-	printf("ZBIOR DOSTEPNYCH KOMEND WYSWIETLI SIE PO WPISANIU: \"help\"\n");
-	printf("USTAWIENIE CZESTOTLIWOSCI POCZATKOWEJ ZA POMOCA KOMENDY: \"startfreq\"\n");
+  AppBIACtrl(BIACTRL_START, 0);         /* Control BIA measurement to start. Second parameter has no meaning with this command. */
+ 
   while(1)
   {
     /* Check if interrupt flag which will be set when interrupt occurred. */
-    if(dzialaj == 0){
-			if(AD5940_GetMCUIntFlag())
-			{
-				IntCount++;
-				AD5940_ClrMCUIntFlag(); /* Clear this flag */
-				temp = APPBUFF_SIZE;
-				AppBIAISR(AppBuff, &temp); /* Deal with it and provide a buffer to store data we got */
-				BIAShowResult(AppBuff, temp); /* Show the results to UART */
+    if (koniec){
+        BoolFlag running;
+        if(running == bFALSE){
+            koniec = 0;
+        
+        }
 
-				if(IntCount == 240)
-				{
-					IntCount = 0;
-					//AppBIACtrl(BIACTRL_SHUTDOWN, 0);
-				}
-			}
+    }
     
-			count++;
-			if(count > 1000000)
-			{
-				count = 0;
-				//AppBIAInit(0, 0);    /* Re-initialize BIA application. Because sequences are ready, no need to provide a buffer, which is used to store sequencer commands */
-				//AppBIACtrl(BIACTRL_START, 0);          /* Control BIA measurement to start. Second parameter has no meaning with this command. */
-			}
-		}
-	}
+    
+    
+    
+    
+    if(AD5940_GetMCUIntFlag())
+    {
+      IntCount++;
+      AD5940_ClrMCUIntFlag(); /* Clear this flag */
+      temp = APPBUFF_SIZE;
+      AppBIAISR(AppBuff, &temp); /* Deal with it and provide a buffer to store data we got */
+      BIAShowResult(AppBuff, temp); /* Show the results to UART */
+
+      if(IntCount == 240)
+      {
+        IntCount = 0;
+        //AppBIACtrl(BIACTRL_SHUTDOWN, 0);
+      }
+    }
+    count++;
+    if(count > 1000000)
+    {
+      count = 0;
+      //AppBIAInit(0, 0);    /* Re-initialize BIA application. Because sequences are ready, no need to provide a buffer, which is used to store sequencer commands */
+      //AppBIACtrl(BIACTRL_START, 0);          /* Control BIA measurement to start. Second parameter has no meaning with this command. */
+    }
+  }
 }
 
-uint32_t ustaw_start_freq(uint32_t para1, uint32_t para2){
-	AppBIACfg_Type *pBIACfg;
-  AppBIAGetCfg(&pBIACfg);
-	printf("Wartosc poczatkowa czestotliwosci: %d\n", para1);
-	pBIACfg->SweepCfg.SweepStart = para1;
-	printf("Ustaw wartosc koncowa czestotliwosci za pomoca komendy \"endfreq\"\n");
-	return 0;
-}
-
-uint32_t ustaw_end_freq(uint32_t para1, uint32_t para2){
-	AppBIACfg_Type *pBIACfg;
-  AppBIAGetCfg(&pBIACfg);
-	printf("Wartosc koncowa czestotliwosci: %d\n", para1);
-	pBIACfg->SweepCfg.SweepStop = para1;
-	printf("Ustaw ilosc punktow charakterystyki czestotliwosciowej za pomoca komendy \"punkty\"\n");
-	return 0;
-}
-
-uint32_t start_pomiarow(uint32_t para1, uint32_t para2){
-	printf("Freq[Hz],   Z[Ohm],   Phase[rad]\n");
-	AppBIACtrl(BIACTRL_START,0);
-	dzialaj = 0;
-	return 0;
-}
-uint32_t stop_pomiarow(uint32_t para1, uint32_t para2){
-	printf("Zatrzymanie pomiarow\n");
-	AppBIACtrl(BIACTRL_STOPNOW,0);
-	return 0;
-}
-
-uint32_t ustaw_punkty(uint32_t para1, uint32_t para2){
+uint32_t set_freq_base(uint32_t para1, uint32_t para2){
+    fImpCar_Type ImpAVR;
     AppBIACfg_Type *pBIACfg;
     AppBIAGetCfg(&pBIACfg);
-    printf("Ilosc punktow wynosi: %d\n", para1);
+    printf("Set start frequency: %d\n", para1);
+    pBIACfg->SweepCfg.SweepStart = para1;
+
+}
+uint32_t set_freq_end(uint32_t para1, uint32_t para2){
+    fImpCar_Type ImpAVR;
+    AppBIACfg_Type *pBIACfg;
+    AppBIAGetCfg(&pBIACfg);
+    printf("Set end frequency: %d\n", para1);
+    pBIACfg->SweepCfg.SweepStop = para1;
+    return 0;
+}
+uint32_t set_points(uint32_t para1, uint32_t para2){
+    fImpCar_Type ImpAVR;
+    AppBIACfg_Type *pBIACfg;
+    AppBIAGetCfg(&pBIACfg);
+    printf("Set points: %d\n", para1);
     pBIACfg->SweepCfg.SweepPoints = para1;
-		printf("Wybierz charakterystyke logarytmiczna za pomoca komendy \"log\" lub liniowa za pomoca komendy \"lin\"\n");
+    return 0;
+}
+uint32_t log_or_lin(uint32_t para1, uint32_t para2){
+    fImpCar_Type ImpAVR;
+    AppBIACfg_Type *pBIACfg;
+    AppBIAGetCfg(&pBIACfg);
+    printf("Type 'log', if u want logarythmic characteristic: %s\n", para1);
+    if(para1 == 'LOG'){
+        pBIACfg->SweepCfg.SweepLog = bTRUE;
+    }
+    else{
+        pBIACfg->SweepCfg.SweepLog = bFALSE;
+        print("Characteristic will be linear");
+    }
     return 0;
 }
 
-uint32_t char_log(uint32_t para1, uint32_t para2){
-	  AppBIACfg_Type *pBIACfg;
+
+//uint32_t voltage_shift(uint32_t para1, uint32_t para2);
+uint32_t command_start_measurement(uint32_t para1, uint32_t para2){
+    fImpCar_Type ImpAVR;
+    AppBIACfg_Type *pBIACfg;
     AppBIAGetCfg(&pBIACfg);
-		pBIACfg->SweepCfg.SweepLog = bTRUE;
-		printf("Punkty beda sie zwiekszac logarytmicznie\n");
-		printf("Rozpocznij pomiary komenda \"start\", mozesz je przerwac za pomoca komendy \"stop\"\n");
-	  return 0;
+    print("To start measurments type 'start': %s\n", para1);
+    if(para1 == 'start'){
+        print("If u want to stop measurments stype: 'stop'");
+        AppBIACtrl(APPCTRL_START, 0);
+    }
+    else if(para1 == 'stop'){
+        command_stop_measurement();
+    }
+    return 0
 }
-	
-uint32_t char_lin(uint32_t para1, uint32_t para2){
-		AppBIACfg_Type *pBIACfg;
-    AppBIAGetCfg(&pBIACfg);
-		pBIACfg->SweepCfg.SweepLog = bFALSE;
-		printf("Punkty beda sie zwiekszac liniowo\n");
-		printf("Rozpocznij pomiary komenda \"start\", mozesz je przerwac za pomoca komendy \"stop\"\n");
-	  return 0;
+uint32_t command_stop_measurement(uint32_t para1, uint32_t para2){
+    AppEDACtrl(APPCTRL_STOPNOW, 0);
+    print("U stop measurments");
+  return 0;
 }
 
 

@@ -10,7 +10,7 @@
       <TargetName>ADICUP3029</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>5060960::V5.06 update 7 (build 960)::.\ARM_Compiler_5.06u7</pCCUsed>
+      <pCCUsed>5060750::V5.06 update 6 (build 750)::ARMCC</pCCUsed>
       <uAC6>0</uAC6>
       <TargetOption>
         <TargetCommonOption>
@@ -371,7 +371,7 @@
             <TextAddressRange>0x00000000</TextAddressRange>
             <DataAddressRange>0x20000000</DataAddressRange>
             <pXoBase></pXoBase>
-            <ScatterFile>.\OUT\ADICUP3029.sct</ScatterFile>
+            <ScatterFile></ScatterFile>
             <IncludeLibs></IncludeLibs>
             <IncludeLibsPath></IncludeLibsPath>
             <Misc></Misc>
@@ -413,11 +413,6 @@
               <FileName>BodyImpedance.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\BodyImpedance.c</FilePath>
-            </File>
-            <File>
-              <FileName>UARTCmd.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\UARTCmd.c</FilePath>
             </File>
           </Files>
         </Group>

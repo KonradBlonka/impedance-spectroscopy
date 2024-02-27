@@ -1,22 +1,19 @@
-#include "ad5940.h"
-#include "AD5940.h"
-#include <stdio.h>
+#include "stdint.h"
 #include "string.h"
-#include "math.h"
+#include "stdio.h"
 #include <stdlib.h>
 
 #define LINEBUFF_SIZE 128
 #define CMDTABLE_SIZE 8
 
-uint32_t ustaw_start_freq(uint32_t para1, uint32_t para2);
-uint32_t ustaw_end_freq(uint32_t para1, uint32_t para2);
-uint32_t ustaw_punkty(uint32_t para1, uint32_t para2);
-uint32_t char_log(uint32_t para1, uint32_t para2);
-uint32_t char_lin(uint32_t para1, uint32_t para2);
-uint32_t start_pomiarow(uint32_t para1, uint32_t para2);
-uint32_t stop_pomiarow(uint32_t para1, uint32_t para2);
 uint32_t help(uint32_t para1, uint32_t para2);
-
+uint32_t set_freq_base(uint32_t para1, uint32_t para2);
+uint32_t set_freq_end(uint32_t para1, uint32_t para2);
+uint32_t set_points(uint32_t para1, uint32_t para2);
+uint32_t log_or_lin(uint32_t para1, uint32_t para2);
+uint32_t voltage_shift(uint32_t para1, uint32_t para2);
+uint32_t command_start_measurement(uint32_t para1, uint32_t para2);
+uint32_t command_stop_measurement(uint32_t para1, uint32_t para2);
 
 struct __uartcmd_table
 {
@@ -25,31 +22,29 @@ struct __uartcmd_table
   const char *pDesc;
 }uart_cmd_table[CMDTABLE_SIZE]=
 {
-	{(void*)help, "help", "POKAZANIE LISTY KOMEND"},
-  {(void*)ustaw_start_freq, "startfreq", "USTAW STARTOWA WARTOSC CZESTOTLIWOSCI OD 1-200000 Hz"},
-  {(void*)ustaw_end_freq, "endfreq", "USTAW KONCOWA WARTOSC CZESTOTLIWOSCI OD 1 - 200000 Hz, endfreq >= startfreq"},
-	{(void*)char_log, "log", "USTAW CHARAKTERYSTYKE LOGARYTMICZNA"},
-	{(void*)char_lin, "lin", "USTAW CHARAKTERYSTYKE LINIOWA"},
-  {(void*)ustaw_punkty, "punkty", "USTAW LICZBE PUNKTOW CHARAKTERYSTYKI"},
-	{(void*)start_pomiarow, "start", "ROZPOCZNIJ POMIARY"},
-  {(void*)stop_pomiarow, "stop", "ZATRZYMAJ POMIARY"},
-	
-		
+  {(void*)help, "help", "print supported commands"},
+  {(void*)command_start_measurement, "start", "start selected application"},
+  {(void*)command_stop_measurement, "stop", "stop selected application"},
+  {(void*)set_freq_base, "setbase", "Set start freq"},
+  {(void*)set_freq_end, "setend", "Set end freq"},
+  {(void*)set_points, "points", "Set number of points"},
+  {(void*)log_or_lin, "character", "Choose linear or logarithmic characteristic"},
+  {(void*)voltage_shift, "volt", "How much to shift characteristic"},
 };
+
 
 uint32_t help(uint32_t para1, uint32_t para2)
 {
   int i = 0;
-  printf("**LISTA KOMEND**\n");
+  printf("*****help menu*****\nbelow are supported commands:\n");
   for(;i<CMDTABLE_SIZE;i++)
   {
     if(uart_cmd_table[i].pObj)
-      printf("%8s - %s\n", uart_cmd_table[i].cmd_name, uart_cmd_table[i].pDesc);
+      printf("%-8s --\t%s\n", uart_cmd_table[i].cmd_name, uart_cmd_table[i].pDesc);
   }
-  printf("**KONIEC LISTY**\n");
+  printf("***table end***\n");
   return 0x87654321;
 }
-
 
 
 char line_buffer[LINEBUFF_SIZE];
@@ -172,7 +167,7 @@ void UARTCmd_Process(char c)
     }
     /* Step3, call function */
     res = ((uint32_t (*)(uint32_t, uint32_t))(pObjFound))(parameter1, parameter2);
-    //printf("res:0x%08x\n", res);
+    printf("res:0x%08x\n", res);
     line_buffer_index = 0;  /* Reset buffer */
   }
   else
@@ -180,5 +175,3 @@ void UARTCmd_Process(char c)
     line_buffer[line_buffer_index++] = c;
   }
 }
-
-
