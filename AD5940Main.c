@@ -28,7 +28,7 @@ Analog Devices Software License Agreement.
 #define APPBUFF_SIZE 512
 uint32_t AppBuff[APPBUFF_SIZE];
 
-/* It's your choice here how to do with the data. Here is just an example to print them to UART */
+/* print to UART */
 AD5940Err BIAShowResult(uint32_t *pData, uint32_t DataCount)
 {
   float freq;
@@ -130,14 +130,9 @@ void AD5940_Main(void)
         BoolFlag running;
         if(running == bFALSE){
             koniec = 0;
-        
         }
 
     }
-    
-    
-    
-    
     
     if(AD5940_GetMCUIntFlag())
     {
@@ -158,7 +153,7 @@ void AD5940_Main(void)
     {
       count = 0;
       //AppBIAInit(0, 0);    /* Re-initialize BIA application. Because sequences are ready, no need to provide a buffer, which is used to store sequencer commands */
-      //AppBIACtrl(BIACTRL_START, 0);          /* Control BIA measurement to start. Second parameter has no meaning with this command. */
+      //AppBIACtrl(BIACTRL_START, 0); /* Control BIA measurement to start. Second parameter has no meaning with this command. */
     }
   }
 }
@@ -224,9 +219,3 @@ uint32_t command_stop_measurement(uint32_t para1, uint32_t para2){
   return 0;
 }
 
-
-/**
- * @}
- * @}
- * */
- 

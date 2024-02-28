@@ -161,7 +161,7 @@ void UARTCmd_Process(char c)
       line_buffer_index = 0; /* Reset buffer */
       return;   /* Command not support */
     }
-    if(token_count > 1)           /* There is parameters */
+    if(token_count > 1) /* There is parameters */
     {
       UARTCmd_TranslateParas();
     }

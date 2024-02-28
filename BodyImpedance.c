@@ -604,6 +604,3 @@ AD5940Err AppBIAISR(void *pBuff, uint32_t *pCount)
   return 0;
 } 
 
-/**
-  * @}
-  */
