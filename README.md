@@ -10,6 +10,7 @@ Hardware
 - Mirco USB to USB cable
 - PC or Laptop with a USB port
 - Custom Cables (Optional)
+
 Software
 - AD5940_BIA Example Project (Git Lab)
 - Serial Terminal Program, Such as Putty or RealTerm
