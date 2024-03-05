@@ -37,12 +37,13 @@ Baud Rate: 230400 and check your port in device manager.
 When u open port, program should display question to set up parameters and display impedance results at a given frequency.
 
 Step 4 (optional)
-U can 
+U can save results from Step 3 as "C:\Desktop\BIA\POMIARY.txt" and set up VBA in excel with code 
+from "https://github.com/KonradBlonka/BIA_VBA.git". The program will present the results in the form of Cole-Cole charts.
 
-# Interface
-
-# Terminal
+# Interface (terminal)
+<img src="images/terminal1.png">
+<img src="images/terminal2.png">
 
 # Excel (VBA)
-
-# Discussion
+<img src="images/Excel.png">
+<img src="images/VBA.png">
