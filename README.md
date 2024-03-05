@@ -40,6 +40,9 @@ Step 4 (optional)
 U can save results from Step 3 as "C:\Desktop\BIA\POMIARY.txt" and set up VBA in excel with code 
 from "https://github.com/KonradBlonka/BIA_VBA.git". The program will present the results in the form of Cole-Cole charts.
 
+# Hardware
+<img src="images/Hardware.png">
+
 # Interface (terminal)
 <img src="images/terminal1.png">
 <img src="images/terminal2.png">
